@@ -31,26 +31,44 @@ def run_program():
         global data_x
         global data_y
         if(data_x > 0 and data_x < 200 and data_y > 0 and data_y < 450):
-            print('robot belok kiri')
-            kecepatan_badan.linear.x = 0.4
-            kecepatan_badan.linear.y = 0.4
-            kecepatan_badan.angular.z = 0.4
+            if(data_y < 225):
+                print("robot jalan kiri dan mutar")
+                kecepatan_badan.linear.x = 0.2
+                kecepatan_badan.linear.y = 0.2
+                kecepatan_badan.angular.z = 0.2
+            else:
+                print('robot putar kiri')
+                kecepatan_badan.linear.x = 0.4
+                kecepatan_badan.linear.y = 0.5
+                kecepatan_badan.angular.z = 0.5
         elif(data_x > 200 and data_x < 400 and data_y > 0 and data_y < 450):
-            if(data_x > 250 and data_x < 310 and data_y > 420 and data_y < 460):
+            if(data_y < 225):
+                print("robot maju kencang")
+                kecepatan_badan.linear.x = 0.2
+                kecepatan_badan.linear.y = 0
+                kecepatan_badan.angular.z = 0
+            elif(data_x > 290 and data_x < 350 and data_y > 420 and data_y < 450):
                 print('robot stop')
                 kecepatan_badan.linear.x = 0
                 kecepatan_badan.linear.y = 0
                 kecepatan_badan.angular.z = 0
-            else:
-                kecepatan_badan.linear.x = 0.4
+            elif(data_y > 255):
+                print('robot maju')
+                kecepatan_badan.linear.x = 0.2
                 kecepatan_badan.linear.y = 0
                 kecepatan_badan.angular.z = 0
-                print('robot maju')
         elif(data_x > 400 and data_x < 600 and data_y > 0 and data_y < 450):
-            print('robot belok kanan')
-            kecepatan_badan.linear.x = -0.4
-            kecepatan_badan.linear.y = -0.4
-            kecepatan_badan.angular.z = -0.4
+            if(data_y < 225):
+                print("robot jalan kanan dan mutar")
+                kecepatan_badan.linear.x = -0.5
+                kecepatan_badan.linear.y = -0.5
+                kecepatan_badan.angular.z = -0.5
+
+            else:
+                print('robot putar kanan')
+                kecepatan_badan.linear.x = -0.4
+                kecepatan_badan.linear.y = -0.5
+                kecepatan_badan.angular.z = -0.5
         pub.publish(kecepatan_badan)
         rate.sleep()
 if __name__ == '__main__':
