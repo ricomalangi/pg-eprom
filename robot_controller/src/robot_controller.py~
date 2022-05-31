@@ -2,7 +2,6 @@
 import rospy
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
-from std_msgs.msg import Bool
 import time 
 
 # width = 600 and height = 450
@@ -17,46 +16,48 @@ status_bola = False
 def callback(data):
     global data_x
     global data_y
+    #print(data.x, data.y)
     data_x = int(data.x)
     data_y = int(data.y)
 
-def ball_callback(msg):
-    global status_bola
-    status_bola = msg.data
-
-
-def move(cmd_vel, duration):
-    begin_time = rospy.get_time()
-
-    while True:
-        current_time = rospy.get_time()
-        if(current_time - begin_time < duration.to_sec()):
-            pub.publish(cmd_vel)
-        else:
-            kecepatan_badan.linear.x = 0.0
-            kecepatan_badan.linear.y = 0.0
-
-
-def mission_1():
-    kecepatan_badan.linear.x = 0.0
-    kecepatan_badan.linear.y = 0.8
-    kecepatan_badan.angular.z = 0.0
-
-
+#def ball_callback(msg):
+#    global status_bola
+#    status_bola = msg.data
 
 def run_program():
+    #global data_x
+    #global data_y
     print('Initilize publisher')
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     rospy.init_node('robot_controller')
     rate = rospy.Rate(20)
     rospy.Subscriber('/ball_position', Pose2D, callback)
-    rospy.Subscriber('/dribbler/ball_in_range', Bool, ball_callback)
+#    rospy.Subscriber('/dribbler/ball_in_range', Bool, ball_callback)
     
+    def mission1(pTime):
+        pass
+    #mission1(6)
+    print("Mission 0")
+    kecepatan_badan.linear.x = 0.0
+    kecepatan_badan.linear.y = 0.5
+    kecepatan_badan.angular.z = 0.0
+    print("Mission 1 selesai")    
+    pub.publish(kecepatan_badan)    
+    
+    time.sleep(5)
+        
+    kecepatan_badan.linear.x = 0.0
+    kecepatan_badan.linear.y = 0.0
+    kecepatan_badan.angular.z = 0.0
+    pub.publish(kecepatan_badan)
     
     while not rospy.is_shutdown():
+        #print(data_x, data_y)
         global data_x
         global data_y
-              
+        
+        
+        
 
         if(data_x > 0 and data_x < 200 and data_y > 0 and data_y < 225):
             print("robot jalan kiri dan mutar")
