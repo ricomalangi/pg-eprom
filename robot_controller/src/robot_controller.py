@@ -3,12 +3,8 @@ import rospy
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
 from std_msgs.msg import Bool
-import time 
 
 # width = 600 and height = 450
-
-rospy.loginfo('init')
-print('init')
 kecepatan_badan = Twist()
 data_x = 0
 data_y = 0
@@ -35,29 +31,33 @@ def move(cmd_vel, duration):
         else:
             kecepatan_badan.linear.x = 0.0
             kecepatan_badan.linear.y = 0.0
+            kecepatan_badan.angular.z = 0.0
 
-
-def mission_1():
-    kecepatan_badan.linear.x = 0.0
-    kecepatan_badan.linear.y = 0.8
-    kecepatan_badan.angular.z = 0.0
-
-
-
-def run_program():
-    print('Initilize publisher')
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    rospy.init_node('robot_controller')
-    rate = rospy.Rate(20)
-    rospy.Subscriber('/ball_position', Pose2D, callback)
-    rospy.Subscriber('/dribbler/ball_in_range', Bool, ball_callback)
     
-    
-    while not rospy.is_shutdown():
-        global data_x
-        global data_y
-              
+pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+rate = rospy.Rate(20)
+rospy.Subscriber('/ball_position', Pose2D, callback)
+rospy.Subscriber('/dribbler/ball_in_range', Bool, ball_callback)
 
+def move(cmd_vel, duration):
+    begin_time = rospy.get_time()
+    while True:
+        current_time = rospy.get_time()
+        
+        if (current_time - begin_time < duration.to_sec()):
+            pub.publish(cmd_vel)
+
+            rate.sleep()
+        else:
+            kecepatan_badan.linear.x = 0.0
+            kecepatan_badan.linear.y = 0.0
+            kecepatan_badan.angular.z = 0.0
+            break
+
+def ball_detection():
+    global data_x
+    global data_y
+    while True:
         if(data_x > 0 and data_x < 200 and data_y > 0 and data_y < 225):
             print("robot jalan kiri dan mutar")
             kecepatan_badan.linear.x = 0.4
@@ -75,14 +75,15 @@ def run_program():
             kecepatan_badan.angular.z = 0
         elif(data_x > 200 and data_x < 400 and data_y > 225 and data_y < 337):
             print("robot maju")
-            kecepatan_badan.linear.x = 0.4
-            kecepatan_badan.linear.y = 0
-            kecepatan_badan.angular.z = 0
+            kecepatan_badan.linear.x = 0.2
+            kecepatan_badan.linear.y = 0.0
+            kecepatan_badan.angular.z = 0.0
         elif(data_x > 200 and data_x < 400 and data_y > 337 and data_y < 450):
             print("robot stop")
-            kecepatan_badan.linear.x = 0
-            kecepatan_badan.linear.y = -0.8
-            kecepatan_badan.angular.z = 0
+            kecepatan_badan.linear.x = 0.0
+            kecepatan_badan.linear.y = 0.0
+            kecepatan_badan.angular.z = 0.0
+            break
         elif(data_x > 400 and data_x < 600 and data_y > 0 and data_y < 225):
             print("robot jalan kanan dan mutar")
             kecepatan_badan.linear.x = 0.4
@@ -95,8 +96,30 @@ def run_program():
             kecepatan_badan.angular.z = -0.8
         pub.publish(kecepatan_badan)
         rate.sleep()
+
+def mission_1():
+    kecepatan_badan.linear.x = 0.0
+    kecepatan_badan.linear.y = 0.8
+    kecepatan_badan.angular.z = 0.0
+    
+    move(kecepatan_badan, rospy.Duration(1.5))
+
+    ball_detection()
+
 if __name__ == '__main__':
     try:
-        run_program()
+        rospy.init_node('robot_controller')
+        while True:
+            print("-----KRI 2022-----")
+            print("Menu: 1(Mission 1), 2(Mission 2), 3(Mission 3), 4(exit)")
+            mission = int(input("Pilih menu: "))
+            if mission == 1:
+                mission()
+            elif mission == 2:
+                pass
+            elif mission == 3:
+                pass
+            elif mission == 4:
+                break
     except rospy.ROSInterruptException:
         pass
