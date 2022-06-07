@@ -13,16 +13,15 @@ import imutils
 import time
 
 # construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video", help="path to the (optional) video file")
-ap.add_argument("-b", "--buffer", type=int, default=64, help="max buffer size")
-args = vars(ap.parse_args())
+#ap = argparse.ArgumentParser()
+#ap.add_argument("-v", "--video", help="path to the (optional) video file")
+#ap.add_argument("-b", "--buffer", type=int, default=64, help="max buffer size")
+#args = vars(ap.parse_args())
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
-orangeLower = (0, 100, 100)
+orangeLower = (0, 150, 150)
 orangeUpper = (10, 255, 255)
-pts = deque(maxlen=args["buffer"])
 bridge = CvBridge()
 
 def run_ball_tracking():
@@ -33,14 +32,7 @@ def run_ball_tracking():
     data_image = Image()
     rate = rospy.Rate(20)
 
-    # if a video path was not supplied, grab the reference
-    # to the webcam
-    if not args.get("video", False):
-        vs = VideoStream(src=0).start()
-    # otherwise, grab a reference to the video file
-    else:
-        vs = cv2.VideoCapture(args["video"])
-    # allow the camera or video file to warm up
+    vs = VideoStream(src=0).start()
     time.sleep(2.0)
 
     # keep looping
@@ -49,7 +41,6 @@ def run_ball_tracking():
         frame = vs.read()
         
         # handle the frame from VideoCapture or VideoStream
-        frame = frame[1] if args.get("video", False) else frame
         # if we are viewing a video and we did not grab a frame,
         # then we have reached the end of the video
         if frame is None:
@@ -96,21 +87,6 @@ def run_ball_tracking():
                 cv2.circle(frame, (int(x), int(y)), int(radius),
                     (0, 255, 255), 2)
                 cv2.circle(frame, center, 5, (0, 0, 255), -1)
-        # update the points queue
-        pts.appendleft(center)
-        
-                        
-        # loop over the set of tracked points
-        for i in range(1, len(pts)):
-            # if either of the tracked points are None, ignore
-            # them
-            if pts[i - 1] is None or pts[i] is None:
-                continue
-            # otherwise, compute the thickness of the line and
-            # draw the connecting lines
-            thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-            cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
-        
 
         data_image = bridge.cv2_to_imgmsg(frame, "bgr8")
         pub_image.publish(data_image)
@@ -119,11 +95,7 @@ def run_ball_tracking():
 
     # if we are not using a video file, stop the camera video stream
     
-    if not args.get("video", False):
-        vs.stop()
-    # otherwise, release the camera
-    else:
-        vs.release()
+    vs.release()
     # close all windows
     cv2.destroyAllWindows()
 

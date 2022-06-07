@@ -1,0 +1,3 @@
+<launch>
+	<node name="ball_tracking" pkg="image_processing" type="ball_tracking.py"/>
+</launch>
